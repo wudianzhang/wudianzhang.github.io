@@ -1,34 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-</head>
-<body>
+<style>
+body{margin:0;background:#111;color:#0f0;font:20px monospace;padding:2rem;animation:f 1s infinite alternate}
+@keyframes f{from{opacity:.7}to{opacity:1}}
+</style>
 <script>
-// 你自定义的JSON数据
-const myJson = {
-  time: new Date().toISOString(),
-  name: "wudianzhang",
-  status: "online",
-  data: [11,22,33]
-};
-
-// 把JSON打印到控制台 F12 可查看
-console.log("当前JSON数据：", myJson);
-
-// 可选：自动下载JSON到本地
-function downloadJson() {
-  const blob = new Blob([JSON.stringify(myJson, null, 2)], {
-    type: "application/json"
-  });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "data.json";
-  // a.click(); // 取消注释打开页面自动下载
-}
-
-// downloadJson();
+document.body.innerText=JSON.stringify({
+  name:"wudianzhang",
+  status:"online",
+  time:new Date
+})
 </script>
-</body>
-</html>
