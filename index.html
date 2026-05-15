@@ -1,11 +1,308 @@
-<style>
-body{margin:0;background:#111;color:#0f0;font:20px monospace;padding:2rem;animation:f 1s infinite alternate}
-@keyframes f{from{opacity:.7}to{opacity:1}}
-</style>
-<script>
-document.body.innerText=JSON.stringify({
-  name:"wudianzhang",
-  status:"online",
-  time:new Date
-})
-</script>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 编程工具 夯到拉 排名</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        .tier-section {
+            min-height: 100px;
+            transition: all 0.2s ease;
+        }
+        .tier-section.drag-over {
+            background-color: rgba(0,0,0,0.1);
+            transform: scale(1.01);
+        }
+        .tool-card {
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            user-select: none;
+        }
+        .tool-card:active {
+            cursor: grabbing;
+        }
+        .tool-card.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .s-tier { background-color: #ff3b30; color: white; }
+        .a-tier { background-color: #ff9500; color: white; }
+        .b-tier { background-color: #ffcc00; color: black; }
+        .c-tier { background-color: #ffebcc; color: black; }
+        .d-tier { background-color: #e5e5ea; color: black; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <!-- 标题和控制栏 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-4">
+                🧠 AI 编程工具「夯到拉」排名
+            </h1>
+            <p class="text-center text-gray-600 mb-6">拖拽图标到不同层级，定制你的AI工具天梯榜</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="resetAll()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                    <i class="fa fa-refresh"></i> 重置排序
+                </button>
+                <button onclick="exportAsImage()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                    <i class="fa fa-download"></i> 导出图片
+                </button>
+                <button onclick="addCustomTool()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                    <i class="fa fa-plus"></i> 添加工具
+                </button>
+            </div>
+        </div>
+
+        <!-- 排名主表格 -->
+        <div id="tier-list" class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+            <!-- 夯 -->
+            <div class="flex tier-row border-b border-gray-200">
+                <div class="tier-label s-tier w-24 md:w-32 flex items-center justify-center text-2xl font-bold">夯</div>
+                <div class="tier-section flex-1 p-3 flex flex-wrap gap-2 bg-red-50" data-tier="s"></div>
+            </div>
+            <!-- 顶级 -->
+            <div class="flex tier-row border-b border-gray-200">
+                <div class="tier-label a-tier w-24 md:w-32 flex items-center justify-center text-2xl font-bold">顶级</div>
+                <div class="tier-section flex-1 p-3 flex flex-wrap gap-2 bg-orange-50" data-tier="a"></div>
+            </div>
+            <!-- 人上人 -->
+            <div class="flex tier-row border-b border-gray-200">
+                <div class="tier-label b-tier w-24 md:w-32 flex items-center justify-center text-2xl font-bold">人上人</div>
+                <div class="tier-section flex-1 p-3 flex flex-wrap gap-2 bg-yellow-50" data-tier="b"></div>
+            </div>
+            <!-- NPC -->
+            <div class="flex tier-row border-b border-gray-200">
+                <div class="tier-label c-tier w-24 md:w-32 flex items-center justify-center text-2xl font-bold">NPC</div>
+                <div class="tier-section flex-1 p-3 flex flex-wrap gap-2 bg-amber-50" data-tier="c"></div>
+            </div>
+            <!-- 拉完了 -->
+            <div class="flex tier-row">
+                <div class="tier-label d-tier w-24 md:w-32 flex items-center justify-center text-2xl font-bold">拉完了</div>
+                <div class="tier-section flex-1 p-3 flex flex-wrap gap-2 bg-gray-100" data-tier="d"></div>
+            </div>
+        </div>
+
+        <!-- 待排序工具区 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📦 工具库（拖到上面排序）</h2>
+            <div id="tool-pool" class="flex flex-wrap gap-3">
+                <!-- 工具卡片会由JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加工具弹窗 -->
+    <div id="addModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-80">
+            <h3 class="text-lg font-bold mb-4">添加自定义工具</h3>
+            <input type="text" id="toolName" placeholder="工具名称" class="w-full border rounded-lg p-2 mb-3">
+            <input type="text" id="toolIcon" placeholder="图标URL（可选）" class="w-full border rounded-lg p-2 mb-4">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg">取消</button>
+                <button onclick="confirmAddTool()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始工具数据（和你截图里的一致）
+        const initialTools = [
+            { name: "Cursor", tier: "pool", icon: "https://cdn.jsdelivr.net/gh/getcursor/cursor-app@main/apps/web/public/favicon.ico" },
+            { name: "Claude Code", tier: "pool", icon: "https://www.anthropic.com/favicon.ico" },
+            { name: "Codex", tier: "pool", icon: "https://openai.com/favicon.ico" },
+            { name: "Trae", tier: "pool", icon: "https://lf3-static.bytednsdoc.com/obj/eden-cn/64426679898a465890d76a6c7d4110c5/bytecamp/favicon.ico" },
+            { name: "OpenCode", tier: "pool", icon: "https://opencode.dev/favicon.ico" },
+            { name: "Manus", tier: "pool", icon: "https://manus.ai/favicon.ico" },
+            { name: "GitHub Copilot", tier: "pool", icon: "https://github.com/favicon.ico" },
+            { name: "Windsurf", tier: "pool", icon: "https://codeium.com/favicon.ico" },
+            { name: "Kiro", tier: "pool", icon: "https://kiro.dev/favicon.ico" },
+            { name: "Zed", tier: "pool", icon: "https://zed.dev/favicon.ico" },
+            { name: "Antigravity", tier: "pool", icon: "https://antigravity.dev/favicon.ico" },
+            { name: "Qoder", tier: "pool", icon: "https://qoder.com/favicon.ico" },
+            { name: "CodeBuddy", tier: "pool", icon: "https://codebuddy.dev/favicon.ico" },
+            { name: "Cline", tier: "pool", icon: "https://cline.bot/favicon.ico" },
+            { name: "v0.dev", tier: "pool", icon: "https://v0.dev/favicon.ico" },
+            { name: "Lovable", tier: "pool", icon: "https://lovable.dev/favicon.ico" },
+            { name: "Replit", tier: "pool", icon: "https://replit.com/favicon.ico" },
+            { name: "Goose", tier: "pool", icon: "https://block.github.io/goose/favicon.ico" },
+            { name: "通义灵码", tier: "pool", icon: "https://img.alicdn.com/imgextra/i3/O1CN0137b7zG1zXq7zXq7zX_!!6000000006967-0-tps-200-200.jpg" },
+            { name: "Comate", tier: "pool", icon: "https://cloud.google.com/static/favicon.ico" },
+            { name: "CodeGeeX", tier: "pool", icon: "https://codegeex.cn/favicon.ico" },
+            { name: "Junie", tier: "pool", icon: "https://junie.dev/favicon.ico" },
+            { name: "Kilo Code", tier: "pool", icon: "https://kilocode.ai/favicon.ico" },
+            { name: "Continue", tier: "pool", icon: "https://continue.dev/favicon.ico" },
+            { name: "Warp", tier: "pool", icon: "https://warp.dev/favicon.ico" }
+        ];
+
+        let tools = JSON.parse(JSON.stringify(initialTools));
+        let draggedElement = null;
+
+        // 初始化页面
+        function init() {
+            renderTools();
+            setupDragEvents();
+        }
+
+        // 渲染所有工具
+        function renderTools() {
+            document.querySelectorAll('.tool-card').forEach(el => el.remove());
+            
+            tools.forEach((tool, index) => {
+                const card = createToolCard(tool, index);
+                if (tool.tier === 'pool') {
+                    document.getElementById('tool-pool').appendChild(card);
+                } else {
+                    document.querySelector(`[data-tier="${tool.tier}"]`).appendChild(card);
+                }
+            });
+        }
+
+        // 创建工具卡片
+        function createToolCard(tool, index) {
+            const card = document.createElement('div');
+            card.className = 'tool-card bg-white rounded-lg p-2 shadow-md flex flex-col items-center w-20';
+            card.draggable = true;
+            card.dataset.index = index;
+            
+            // 图标（如果加载失败用首字母代替）
+            const icon = document.createElement('img');
+            icon.src = tool.icon;
+            icon.className = 'w-10 h-10 rounded mb-1 object-contain';
+            icon.onerror = function() {
+                this.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.className = 'w-10 h-10 rounded mb-1 bg-gray-200 flex items-center justify-center text-lg font-bold';
+                fallback.textContent = tool.name.charAt(0);
+                this.parentNode.insertBefore(fallback, this);
+            };
+            
+            const name = document.createElement('span');
+            name.className = 'text-xs text-center truncate w-full';
+            name.textContent = tool.name;
+            
+            card.appendChild(icon);
+            card.appendChild(name);
+            return card;
+        }
+
+        // 设置拖拽事件
+        function setupDragEvents() {
+            // 工具卡片拖拽开始
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('tool-card')) {
+                    draggedElement = e.target;
+                    e.target.classList.add('dragging');
+                }
+            });
+
+            document.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('tool-card')) {
+                    e.target.classList.remove('dragging');
+                    draggedElement = null;
+                }
+            });
+
+            // 层级区域拖放
+            document.querySelectorAll('.tier-section').forEach(section => {
+                section.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    section.classList.add('drag-over');
+                });
+
+                section.addEventListener('dragleave', () => {
+                    section.classList.remove('drag-over');
+                });
+
+                section.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    section.classList.remove('drag-over');
+                    if (draggedElement) {
+                        const index = draggedElement.dataset.index;
+                        const tier = section.dataset.tier;
+                        tools[index].tier = tier;
+                        renderTools();
+                        setupDragEvents();
+                    }
+                });
+            });
+
+            // 工具池拖放
+            document.getElementById('tool-pool').addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            document.getElementById('tool-pool').addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedElement) {
+                    const index = draggedElement.dataset.index;
+                    tools[index].tier = 'pool';
+                    renderTools();
+                    setupDragEvents();
+                }
+            });
+        }
+
+        // 重置所有排序
+        function resetAll() {
+            tools = JSON.parse(JSON.stringify(initialTools));
+            renderTools();
+            setupDragEvents();
+        }
+
+        // 导出为图片（使用html2canvas）
+        function exportAsImage() {
+            if (!window.html2canvas) {
+                const script = document.createElement('script');
+                script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                script.onload = () => captureImage();
+                document.head.appendChild(script);
+            } else {
+                captureImage();
+            }
+        }
+
+        function captureImage() {
+            const tierList = document.getElementById('tier-list');
+            html2canvas(tierList).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'ai-tools-tier-list.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        // 添加自定义工具
+        function addCustomTool() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.getElementById('addModal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addModal').classList.remove('flex');
+            document.getElementById('toolName').value = '';
+            document.getElementById('toolIcon').value = '';
+        }
+
+        function confirmAddTool() {
+            const name = document.getElementById('toolName').value.trim();
+            const icon = document.getElementById('toolIcon').value.trim() || '';
+            if (name) {
+                tools.push({ name, tier: 'pool', icon });
+                renderTools();
+                setupDragEvents();
+                closeModal();
+            }
+        }
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
