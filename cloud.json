@@ -1,11 +1,6 @@
 {
   "name": "wudianzhang",
   "status": "online",
-  "timestamp": "2026-05-15T00:00:00Z",
-  "data": {
-    "version": "1.0.0",
-    "message": "Hello from GitHub Pages!",
-    "is_test": true,
-    "values": [1, 2, 3, 4, 5]
-  }
+  "message": "测试数据已就绪",
+  "time": "2026-05-15"
 }
