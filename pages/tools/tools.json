@@ -1,0 +1,68 @@
+[
+  {
+    "name": "PhotoMaster Pro",
+    "description": "专业图片编辑工具，支持批量处理和滤镜效果",
+    "tags": ["图片", "编辑", "滤镜"],
+    "icon": "🖼️",
+    "licenseCode": "PHOTO-2026-XXXX-YYYY-ZZZZ",
+    "version": "v3.2.1",
+    "publishDate": "2026-01-15",
+    "view": 125000,
+    "url": "https://example.com/photomaster"
+  },
+  {
+    "name": "ImageAI Studio",
+    "description": "AI驱动的智能图像处理平台",
+    "tags": ["AI", "图片", "智能"],
+    "icon": "🤖",
+    "licenseCode": "IMAGEAI-2026-XXXX-YYYY-ZZZZ",
+    "version": "v2.8.0",
+    "publishDate": "2026-02-20",
+    "view": 83000,
+    "url": "https://example.com/imageai"
+  },
+  {
+    "name": "BatchConvert",
+    "description": "高效批量图片格式转换工具",
+    "tags": ["批量", "转换", "格式"],
+    "icon": "🔄",
+    "licenseCode": "BATCH-2026-XXXX-YYYY-ZZZZ",
+    "version": "v1.5.2",
+    "publishDate": "2026-03-10",
+    "view": 56000,
+    "url": "https://example.com/batchconvert"
+  },
+  {
+    "name": "吴店长工具箱",
+    "description": "吴店长专属工具合集，一站式解决方案",
+    "tags": ["工具箱", "合集", "专用"],
+    "icon": "🧰",
+    "licenseCode": "WUCHD-2026-XXXX-YYYY-ZZZZ",
+    "version": "v4.0.0",
+    "publishDate": "2026-04-05",
+    "view": 201000,
+    "url": "https://example.com/wuchd-toolbox"
+  },
+  {
+    "name": "ColorPicker Pro",
+    "description": "专业取色器，支持颜色方案管理",
+    "tags": ["取色", "颜色", "设计"],
+    "icon": "🎨",
+    "licenseCode": "COLOR-2026-XXXX-YYYY-ZZZZ",
+    "version": "v2.1.0",
+    "publishDate": "2026-05-01",
+    "view": 32000,
+    "url": "https://example.com/colorpicker"
+  },
+  {
+    "name": "吴店长授权管理",
+    "description": "统一管理所有工具的授权和激活状态",
+    "tags": ["授权", "管理", "激活"],
+    "icon": "🔐",
+    "licenseCode": "AUTH-2026-XXXX-YYYY-ZZZZ",
+    "version": "v1.2.0",
+    "publishDate": "2026-05-10",
+    "view": 158000,
+    "url": "https://example.com/auth-manager"
+  }
+]
