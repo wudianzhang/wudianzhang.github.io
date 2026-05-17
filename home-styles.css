@@ -1,6 +1,3 @@
-/* ========================================
-   吴店长工具授权中心 - ModelScope模型库风格
-   ======================================== */
 
 :root {
     --primary-color: #624aff;
@@ -544,6 +541,167 @@ body {
     color: white;
 }
 
+.doc-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.doc-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+/* ===== 文档模态框 ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-container {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 800px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.modal-body .markdown-body {
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+.modal-body .markdown-body h1,
+.modal-body .markdown-body h2,
+.modal-body .markdown-body h3 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-body .markdown-body h1 { font-size: 24px; }
+.modal-body .markdown-body h2 { font-size: 20px; }
+.modal-body .markdown-body h3 { font-size: 18px; }
+
+.modal-body .markdown-body p {
+    margin: 12px 0;
+}
+
+.modal-body .markdown-body ul,
+.modal-body .markdown-body ol {
+    margin: 12px 0;
+    padding-left: 20px;
+}
+
+.modal-body .markdown-body li {
+    margin: 6px 0;
+}
+
+.modal-body .markdown-body code {
+    padding: 2px 6px;
+    background: var(--hover-bg);
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Consolas', monospace;
+}
+
+.modal-body .markdown-body pre {
+    padding: 12px;
+    background: var(--hover-bg);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+}
+
+.modal-body .markdown-body pre code {
+    padding: 0;
+    background: none;
+}
+
+.modal-body .markdown-body blockquote {
+    margin: 12px 0;
+    padding: 10px 16px;
+    border-left: 4px solid var(--primary-color);
+    background: var(--primary-light);
+    border-radius: var(--radius-sm);
+}
+
+.modal-body .markdown-body img {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+}
+
+.doc-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
 /* ===== 空状态 ===== */
 .empty-state {
     display: flex;
@@ -627,5 +785,30 @@ body {
     
     .content-area {
         padding: 12px 16px;
+    }
+    
+    /* 筛选栏响应式 */
+    .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .filter-tabs {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .filter-tab {
+        padding: 6px 12px;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+    
+    .total-stats {
+        width: 100%;
+        justify-content: flex-start;
     }
 }

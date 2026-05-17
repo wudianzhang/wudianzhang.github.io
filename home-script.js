@@ -1,4 +1,4 @@
-// 吴店长工具授权中心 - ModelScope模型库风格
+
 
 let allTools = [];
 let allTags = [];
@@ -7,13 +7,14 @@ let searchQuery = '';
 let currentSort = 'default';
 
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 吴店长工具授权中心初始化中...');
+    console.log(' 吴店长程序站初始化中...');
     
     try {
         await loadLicenseData();
         renderCategories();
         renderToolsList();
         updateResultCount();
+        renderNavMenu();
         bindEvents();
         
         console.log('✅ 初始化完成，共加载', allTools.length, '个工具');
@@ -71,17 +72,21 @@ function renderCategories() {
     allItem.className = 'category-item active';
     allItem.dataset.tag = 'all';
     allItem.innerHTML = `
-        <span class="category-icon">📋</span>
+        <span class="category-icon"></span>
         <span>全部</span>
         <span class="category-count">${allCount}</span>
     `;
     allItem.addEventListener('click', () => filterByTag('all'));
     container.appendChild(allItem);
     
-    // 标签列表（不添加分割线）
-    allTags.forEach(tag => {
-        const count = allTools.filter(t => (t.tags || []).includes(tag)).length;
-        
+    // 计算每个标签的数量并排序
+    const tagCounts = allTags.map(tag => ({
+        tag,
+        count: allTools.filter(t => (t.tags || []).includes(tag)).length
+    })).filter(item => item.count > 0).sort((a, b) => b.count - a.count);
+    
+    // 渲染排序后的标签列表
+    tagCounts.forEach(({ tag, count }) => {
         const item = document.createElement('div');
         item.className = 'category-item';
         item.dataset.tag = tag;
@@ -196,7 +201,8 @@ function createToolCard(tool, index) {
             <div class="license-area">
                 <span class="license-code" title="${tool.licenseCode || ''}">${tool.licenseCode || 'N/A'}</span>
                 <button class="copy-btn" data-code="${tool.licenseCode || ''}">复制</button>
-                ${tool.url ? `<a href="${tool.url}" target="_blank" class="open-btn">打开</a>` : ''}
+                ${tool.docPath ? `<button class="doc-btn" data-doc="${tool.docPath}" onclick="event.stopPropagation(); openDocModal(this)">📄 文档</button>` : ''}
+                ${tool.url ? `<a href="${tool.url}" target="_blank" class="open-btn">获取</a>` : ''}
             </div>
             <div class="card-meta">
                 <span class="meta-item">
@@ -249,8 +255,31 @@ function isExpiringSoon(dateStr) {
 
 // 检查是否是新工具（30天内）
 function isNewTool(tool) {
-    // 可以根据创建时间判断，这里简单处理
+    // 根据创建时间判断，这里简单处理
     return false;
+}
+
+// 动态渲染导航菜单
+function renderNavMenu() {
+    const navMenu = document.getElementById('navMenu');
+    if (!navMenu) return;
+    
+    // 清空现有菜单
+    navMenu.innerHTML = '';
+    
+    // 首页
+    const homeItem = document.createElement('a');
+    homeItem.href = '/index.html';
+    homeItem.className = 'nav-item';
+    homeItem.textContent = '首页';
+    navMenu.appendChild(homeItem);
+    
+    // 工具库（当前页面）
+    const toolsItem = document.createElement('a');
+    toolsItem.href = '#';
+    toolsItem.className = 'nav-item active';
+    toolsItem.textContent = '工具库';
+    navMenu.appendChild(toolsItem);
 }
 
 // 复制到剪贴板
@@ -401,3 +430,74 @@ function bindEvents() {
 // 全局暴露
 window.resetFilters = resetFilters;
 window.performSearch = performSearch;
+window.openDocModal = openDocModal;
+window.closeDocModal = closeDocModal;
+
+// 打开文档模态框
+function openDocModal(btn) {
+    const docPath = btn.dataset.doc;
+    if (!docPath) return;
+    
+    // 获取工具名称（从卡片中查找）
+    const card = btn.closest('.tool-card');
+    const toolName = card ? card.querySelector('.card-title')?.textContent : '工具文档';
+    
+    const modal = document.getElementById('docModal');
+    const title = document.getElementById('docModalTitle');
+    const body = document.getElementById('docModalBody');
+    
+    if (!modal || !body) return;
+    
+    // 设置标题
+    if (title) title.textContent = toolName;
+    
+    // 显示模态框
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // 显示加载状态
+    body.innerHTML = '<div class="doc-loading">📄 正在加载文档...</div>';
+    
+    // 加载并解析 Markdown
+    fetch(docPath + '?t=' + Date.now())
+        .then(response => {
+            if (!response.ok) throw new Error('文档加载失败');
+            return response.text();
+        })
+        .then(markdown => {
+            // 使用 marked.js 解析
+            if (typeof marked !== 'undefined') {
+                body.innerHTML = `<div class="markdown-body">${marked.parse(markdown)}</div>`;
+            } else {
+                // 如果没有 marked.js，显示原始文本
+                body.innerHTML = `<div class="markdown-body"><pre style="white-space: pre-wrap;">${markdown}</pre></div>`;
+            }
+        })
+        .catch(error => {
+            body.innerHTML = `
+                <div class="doc-error" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" stroke-width="1.5" style="margin-bottom: 16px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4m0 4h.01"/>
+                    </svg>
+                    <p>文档加载失败</p>
+                </div>
+            `;
+        });
+}
+
+// 关闭文档模态框
+function closeDocModal() {
+    const modal = document.getElementById('docModal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+// ESC 键关闭模态框
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeDocModal();
+    }
+});
