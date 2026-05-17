@@ -11,10 +11,9 @@
     <header class="top-nav">
         <div class="nav-container">
             <div class="nav-left">
-                <nav class="nav-menu">
+                <nav class="nav-menu" id="navMenu">
                     <a href="../../index.html" class="nav-item">首页</a>
                     <a href="#" class="nav-item active">工具库</a>
-                    <a href="../docs/index.html" class="nav-item">文档</a>
                 </nav>
             </div>
             <div class="nav-center">
@@ -70,7 +69,21 @@
     <!-- Toast -->
     <div id="toast" class="toast"></div>
 
-    <script src="../../home-script.js?v=6"></script>
+    <!-- 文档模态框 -->
+    <div id="docModal" class="modal-overlay" onclick="if(event.target===this)closeDocModal()">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="docModalTitle">工具文档</h3>
+                <button class="modal-close" onclick="closeDocModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="docModalBody">
+                <div class="doc-loading">📄 正在加载文档...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="../../home-script.js?v=14"></script>
     <script>
         // 指定数据路径
         window.TOOLS_DATA_PATH = 'tools.json';

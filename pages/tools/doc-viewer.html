@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吴店长程序站 - 文档详情</title>
+    <link rel="stylesheet" href="../../../home-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .doc-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .doc-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .doc-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+        
+        .doc-back-btn:hover {
+            background: var(--primary-light);
+        }
+        
+        .doc-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 12px 0;
+        }
+        
+        .doc-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .markdown-body {
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+        
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3 {
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .markdown-body h1 { font-size: 28px; }
+        .markdown-body h2 { font-size: 24px; }
+        .markdown-body h3 { font-size: 20px; }
+        
+        .markdown-body p {
+            margin: 16px 0;
+        }
+        
+        .markdown-body ul,
+        .markdown-body ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+        
+        .markdown-body li {
+            margin: 8px 0;
+        }
+        
+        .markdown-body code {
+            padding: 2px 6px;
+            background: var(--hover-bg);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Consolas', monospace;
+        }
+        
+        .markdown-body pre {
+            padding: 16px;
+            background: var(--hover-bg);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+        }
+        
+        .markdown-body pre code {
+            padding: 0;
+            background: none;
+        }
+        
+        .markdown-body blockquote {
+            margin: 16px 0;
+            padding: 12px 20px;
+            border-left: 4px solid var(--primary-color);
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+        }
+        
+        .markdown-body img {
+            max-width: 100%;
+            border-radius: var(--radius-md);
+        }
+        
+        .doc-loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .doc-error {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .doc-error svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            stroke: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <nav class="nav-menu">
+                    <a href="/index.html" class="nav-item">首页</a>
+                    <a href="/pages/tools/index.html" class="nav-item">工具库</a>
+                </nav>
+            </div>
+            <div class="nav-right">
+                <a href="https://space.bilibili.com/1561008" target="_blank" class="nav-item">B站</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="doc-container">
+        <div id="docContent">
+            <div class="doc-loading"> 正在加载文档...</div>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const docPath = urlParams.get('doc');
+        
+        if (!docPath) {
+            document.getElementById('docContent').innerHTML = `
+                <div class="doc-error">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4m0 4h.01"/>
+                    </svg>
+                    <p>未指定文档路径</p>
+                    <a href="/pages/tools/index.html" style="color: var(--primary-color);">前往工具库</a>
+                </div>
+            `;
+        } else {
+            // 加载并渲染 Markdown
+            fetch(docPath + '?t=' + Date.now())
+                .then(response => {
+                    if (!response.ok) throw new Error('文档加载失败');
+                    return response.text();
+                })
+                .then(markdown => {
+                    const html = marked.parse(markdown);
+                    document.getElementById('docContent').innerHTML = `
+                        <div class="markdown-body">${html}</div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('docContent').innerHTML = `
+                        <div class="doc-error">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 8v4m0 4h.01"/>
+                            </svg>
+                            <p>文档加载失败</p>
+                            <a href="/pages/tools/index.html" style="color: var(--primary-color);">前往工具库</a>
+                        </div>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>
